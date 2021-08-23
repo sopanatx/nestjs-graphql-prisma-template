@@ -1,0 +1,74 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["mongoDb"]
+}
+
+model User {
+  id               String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  firstName        String
+  lastName         String
+  username         String   @unique
+  email            String   @unique
+  password         String
+  salt             String
+  isTwoFactor      Boolean  @default(false)
+  isSuspended      Boolean  @default(false)
+  hasTruemoney     Boolean  @default(false)
+  truemoneyAccount String?
+  hasBankAccount   Boolean  @default(false)
+  bankAccount      String?
+  hasStripe        Boolean  @default(false)
+  stripeAccount    String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @default(now())
+  profile          Profile?
+}
+
+model Profile {
+  id                   String  @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  name                 String
+  profileDesciption    String?
+  website              String?
+  twitterUsername      String?
+  tipsMin              Int     @default(0)
+  tipsMax              Int     @default(200)
+  tipTextEnabled       Boolean @default(true)
+  isVerified           Boolean @default(false)
+  isProfileLockEnabled Boolean @default(true)
+  isAdultContent       Boolean @default(false)
+  isPreventDownloads   Boolean @default(true)
+  country              String? @default("TH")
+  location             String? @default("Bangkok")
+
+  currency      String? @default("THB")
+  pricePerMonth Float?  @default(100.00)
+  headerImage   String?
+  profileImage  String? @default("https://pris.ly/images/default-profile.png")
+
+  userId String @db.ObjectId
+  users  User   @relation(fields: [userId], references: [id])
+}
+
+model Post {
+  id String @id @default(dbgenerated()) @map("_id") @db.ObjectId
+
+  title       String?
+  content     String?
+  isPublished Boolean @default(false)
+  isDraft     Boolean @default(true)
+  isDeleted   Boolean @default(false)
+  isPinned    Boolean @default(false)
+  isScheduled Boolean @default(false)
+
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+}
