@@ -12,24 +12,25 @@ generator client {
 }
 
 model User {
-  id               String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  id               String     @id @default(dbgenerated()) @map("_id") @db.ObjectId
   firstName        String
   lastName         String
-  username         String   @unique
-  email            String   @unique
+  username         String     @unique
+  email            String     @unique
   password         String
   salt             String
-  isTwoFactor      Boolean  @default(false)
-  isSuspended      Boolean  @default(false)
-  hasTruemoney     Boolean  @default(false)
+  isTwoFactor      Boolean    @default(false)
+  isSuspended      Boolean    @default(false)
+  hasTruemoney     Boolean    @default(false)
   truemoneyAccount String?
-  hasBankAccount   Boolean  @default(false)
+  hasBankAccount   Boolean    @default(false)
   bankAccount      String?
-  hasStripe        Boolean  @default(false)
+  hasStripe        Boolean    @default(false)
   stripeAccount    String?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @default(now())
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @default(now())
   profile          Profile?
+  LoginLog         LoginLog[]
 }
 
 model Profile {
@@ -53,22 +54,77 @@ model Profile {
   headerImage   String?
   profileImage  String? @default("https://pris.ly/images/default-profile.png")
 
-  userId String @db.ObjectId
-  users  User   @relation(fields: [userId], references: [id])
+  userId   String     @db.ObjectId
+  users    User       @relation(fields: [userId], references: [id])
+  post     Post[]
+  Media    Media[]
+  Follower Follower[]
+  Blocked  Blocked[]
 }
 
 model Post {
-  id String @id @default(dbgenerated()) @map("_id") @db.ObjectId
-
+  id          String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
   title       String?
   content     String?
-  isPublished Boolean @default(false)
-  isDraft     Boolean @default(true)
-  isDeleted   Boolean @default(false)
-  isPinned    Boolean @default(false)
-  isScheduled Boolean @default(false)
+  isPublished Boolean  @default(false)
+  isDraft     Boolean  @default(true)
+  isDeleted   Boolean  @default(false)
+  isPinned    Boolean  @default(false)
+  isScheduled Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+  ownerId     String   @db.ObjectId
+  owner       Profile  @relation(fields: [ownerId], references: [id])
+  media       Media[]
+}
+
+model Media {
+  id        String @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  mediaType String @default("image")
+  url       String
+  width     Int
+  height    Int
 
 
+  postId    String   @db.ObjectId
+  posts     Post     @relation(fields: [postId], references: [id])
+  ownerId   String   @db.ObjectId
+  owner     Profile  @relation(fields: [id], references: [id])
+  isDeleted Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
+}
+
+model Follower {
+  id           String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  profileId    String   @db.ObjectId
+  followerId   String   @db.ObjectId
+  followDate   DateTime @default(now())
+  followEnd    DateTime @default(now())
+  followerType String   @default("Subscribe")
+  isFollowing  Boolean  @default(true)
+  isRevoke     Boolean  @default(false)
+
+  owner Profile @relation(fields: [profileId], references: [id])
+}
+
+model Blocked {
+  id          String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  blockedUser String   @db.ObjectId
+  blockDate   DateTime @default(now())
+  isBlocked   Boolean  @default(true)
+  blockReason String?
+  Profile     Profile  @relation(fields: [userId], references: [id])
+}
+
+model LoginLog {
+  id          String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  loginDate   DateTime @default(now())
+  loginIP     String
+  loginType   String   @default("web")
+  loginResult Boolean  @default(true)
+  loginAgent  String?
+  user        User     @relation(fields: [userId], references: [id])
 }
