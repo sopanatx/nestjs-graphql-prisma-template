@@ -77,7 +77,6 @@ export class AuthService {
     const isValid = await bcrypt.compare(password, user.password);
     if (!isValid)
       throw new UnauthorizedException('Invalid password', 'INCORRECT_PASSWORD');
-    console.log(user);
     if (user.isDeleted)
       throw new UnauthorizedException('User is deleted', 'USER_IS_DELETED');
     if (user.isSuspended)
