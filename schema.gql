@@ -2,6 +2,33 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type AuthResponseModel {
+  accessToken: String!
+  refreshToken: String!
+  message: String
+}
+
 type Query {
   getHello: String!
+}
+
+type Mutation {
+  authUsername(AuthUsernameDto: AuthUsernameDto!): AuthResponseModel!
+  authRegister(AuthRegisterInput: AuthRegisterInput!): AuthResponseModel!
+}
+
+input AuthUsernameDto {
+  username: String!
+  password: String!
+  email: String
+  reCaptchaToken: String
+}
+
+input AuthRegisterInput {
+  firstName: String!
+  lastName: String!
+  username: String!
+  password: String!
+  email: String!
+  reCaptchaToken: String
 }

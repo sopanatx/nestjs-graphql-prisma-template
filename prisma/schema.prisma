@@ -12,119 +12,43 @@ generator client {
 }
 
 model User {
-  id               String     @id @default(dbgenerated()) @map("_id") @db.ObjectId
-  firstName        String
-  lastName         String
-  username         String     @unique
-  email            String     @unique
-  password         String
-  salt             String
-  isTwoFactor      Boolean    @default(false)
-  isSuspended      Boolean    @default(false)
-  hasTruemoney     Boolean    @default(false)
-  truemoneyAccount String?
-  hasBankAccount   Boolean    @default(false)
-  bankAccount      String?
-  hasStripe        Boolean    @default(false)
-  stripeAccount    String?
-  createdAt        DateTime   @default(now())
-  updatedAt        DateTime   @default(now())
-  profile          Profile?
-  LoginLog         LoginLog[]
-}
-
-model Profile {
-  id                   String  @id @default(dbgenerated()) @map("_id") @db.ObjectId
-  name                 String
-  profileDesciption    String?
-  website              String?
-  twitterUsername      String?
-  tipsMin              Int     @default(0)
-  tipsMax              Int     @default(200)
-  tipTextEnabled       Boolean @default(true)
-  isVerified           Boolean @default(false)
-  isProfileLockEnabled Boolean @default(true)
-  isAdultContent       Boolean @default(false)
-  isPreventDownloads   Boolean @default(true)
-  country              String? @default("TH")
-  location             String? @default("Bangkok")
-
-  currency      String? @default("THB")
-  pricePerMonth Float?  @default(100.00)
-  headerImage   String?
-  profileImage  String? @default("https://pris.ly/images/default-profile.png")
-
-  userId   String     @db.ObjectId
-  users    User       @relation(fields: [userId], references: [id])
-  post     Post[]
-  Media    Media[]
-  Follower Follower[]
-  Blocked  Blocked[]
-}
-
-model Post {
-  id          String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
-  title       String?
-  content     String?
-  isPublished Boolean  @default(false)
-  isDraft     Boolean  @default(true)
-  isDeleted   Boolean  @default(false)
-  isPinned    Boolean  @default(false)
-  isScheduled Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now())
-  ownerId     String   @db.ObjectId
-  owner       Profile  @relation(fields: [ownerId], references: [id])
-  media       Media[]
-}
-
-model Media {
   id        String @id @default(dbgenerated()) @map("_id") @db.ObjectId
-  mediaType String @default("image")
-  url       String
-  width     Int
-  height    Int
+  firstName String
+  lastName  String
+  username  String @unique // username is unique
+  email     String @unique // user's email
+  password  String // password hash
+  salt      String // salt for password
 
+  facebookId String?
+  twitterId  String?
+  googleId   String?
+  githubId   String?
+  appleId    String? // Sign in with Apple
 
-  postId    String   @db.ObjectId
-  posts     Post     @relation(fields: [postId], references: [id])
-  ownerId   String   @db.ObjectId
-  owner     Profile  @relation(fields: [id], references: [id])
-  isDeleted Boolean  @default(false)
+  isEmailVerified Boolean  @default(false)
+  isTwoFactor     Boolean  @default(false) // is two factor authentication enabled
+  isSuspended     Boolean  @default(false) // is the user suspended?
+  isDeleted       Boolean  @default(false) // is the user deleted?
+  createdAt       DateTime @default(now()) // when the user was created
+  updatedAt       DateTime @default(now()) // last updated of the user
+}
+
+model ResetPassword {
+  id        String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  userId    String
+  token     String
+  isUsed    Boolean  @default(false)
+  requestIp String
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  expiredAt DateTime @default(now())
 }
 
-model Follower {
-  id           String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
-  profileId    String   @db.ObjectId
-  followerId   String   @db.ObjectId
-  followDate   DateTime @default(now())
-  followEnd    DateTime @default(now())
-  followerType String   @default("Subscribe")
-  isFollowing  Boolean  @default(true)
-  isRevoke     Boolean  @default(false)
-
-  owner Profile @relation(fields: [profileId], references: [id])
-}
-
-model Blocked {
-  id          String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
-  userId      String   @db.ObjectId
-  blockedUser String   @db.ObjectId
-  blockDate   DateTime @default(now())
-  isBlocked   Boolean  @default(true)
-  blockReason String?
-  Profile     Profile  @relation(fields: [userId], references: [id])
-}
-
-model LoginLog {
-  id          String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
-  userId      String   @db.ObjectId
-  loginDate   DateTime @default(now())
-  loginIP     String
-  loginType   String   @default("web")
-  loginResult Boolean  @default(true)
-  loginAgent  String?
-  user        User     @relation(fields: [userId], references: [id])
+model EmailVerification {
+  id        String   @id @default(dbgenerated()) @map("_id") @db.ObjectId
+  userId    String
+  token     String
+  isUsed    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  expiredAt DateTime @default(now())
 }

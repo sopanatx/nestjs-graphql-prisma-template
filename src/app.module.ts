@@ -1,19 +1,24 @@
 import { Module } from '@nestjs/common';
-import { AppService } from './app.service';
-import { PrismaService } from './prisma.service';
+import { PrismaService } from '@common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { AuthResolver } from './auth/auth.resolver';
-import { AppResolver } from './app/app.resolver';
 import { ConfigModule } from '@nestjs/config';
 import { NODE_ENV, END_POINT } from '@environments';
+import { AuthService } from './auth/auth.service';
+import { AppResolver } from './app/app.resolver';
+import { I18nModule, I18nJsonParser } from 'nestjs-i18n';
+import * as path from 'path';
+import { AuthModule } from './auth/auth.module';
+import { JwtModule, JwtService } from '@nestjs/jwt';
+import { jwtConstants } from './auth/constants';
 @Module({
   imports: [
-    PrismaService,
     GraphQLModule.forRoot({
       debug: NODE_ENV === 'development' ? true : false,
       autoSchemaFile: 'schema.gql',
       installSubscriptionHandlers: true,
-      context: ({ req }) => ({ req }),
+      context: ({ req, connection }) =>
+        connection ? { req: connection.context } : { req },
       introspection: NODE_ENV === 'development' ? true : false,
       bodyParserConfig: { limit: '50mb' },
       tracing: NODE_ENV !== 'production',
@@ -29,9 +34,17 @@ import { NODE_ENV, END_POINT } from '@environments';
       },
       path: END_POINT,
     }),
+    I18nModule.forRoot({
+      fallbackLanguage: 'th',
+      parser: I18nJsonParser,
+      parserOptions: {
+        path: path.join(__dirname, '/i18n/'),
+      },
+    }),
     ConfigModule.forRoot(),
+    AuthModule,
   ],
   controllers: [],
-  providers: [AppService, PrismaService, AuthResolver, AppResolver],
+  providers: [AuthResolver, AuthService, AppResolver, PrismaService],
 })
 export class AppModule {}
